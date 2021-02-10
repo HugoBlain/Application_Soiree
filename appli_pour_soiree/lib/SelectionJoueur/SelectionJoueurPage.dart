@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:appli_pour_soiree/PimPamPoum.dart';
 
 // vue principale pour ajouter/supprimer
 class SelectionJoueurPage extends StatefulWidget {
@@ -25,6 +26,7 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
           // Important: Remove any padding from the ListView.
           padding: EdgeInsets.zero,
           children: <Widget>[
+            //Header of the drawer
             Container(
               color: Colors.blue,
               height: 80,
@@ -38,13 +40,18 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                 ],
               ),
             ),
+
+            //First choice and so on
             ListTile(
-              title: Text('Jeu 1'),
+              title: Text('Pim Pam Poum'),
               onTap: () {
-                // Update the state of the app
-                // ...
-                // Then close the drawer
                 Navigator.pop(context);
+                Navigator.push(
+                    context,
+                    // on affiche la page du livre
+                    // info = false --> on affiche le livre pour potentiellement l'ajouter à sa biblihothèque
+                    // info = true --> on affiche juste les détails du livre
+                    MaterialPageRoute(builder: (context) => PimPamPoum()));
               },
             ),
             ListTile(
