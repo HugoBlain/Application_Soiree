@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
     };
     // dark = factory ThemeData.dark => ThemeData();
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // primarySwatch: MaterialColor(0xfffd5739, color),
 
