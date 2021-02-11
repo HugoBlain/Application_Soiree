@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:appli_pour_soiree/PimPamPoum.dart';
+import 'package:appli_pour_soiree/Undercover.dart';
+
 
 // vue principale pour ajouter/supprimer
 class SelectionJoueurPage extends StatefulWidget {
@@ -11,8 +13,45 @@ class SelectionJoueurPage extends StatefulWidget {
 
 // state
 class _SelectionJoueurPage extends State<SelectionJoueurPage> {
+
+  // attributs
   List<String> players = new List();
   var _controller = TextEditingController();
+
+  // to display a message
+  // display an exemple for rules
+  Future<Null> messageBox(String title, String message, bool barrier) async{
+    return showDialog(
+        context: context,
+        barrierDismissible: barrier,
+        builder: (BuildContext context) {
+          return new SimpleDialog(
+            title: new Text(title),
+            children: [
+              new Container(
+                  padding: EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      new Text(
+                        message,
+                        textAlign: TextAlign.justify,
+                      ),
+                      new Container(height: 10),
+                    ],
+                  )
+              ),
+              new Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  new Container(),
+                  new FlatButton(onPressed: (){Navigator.pop(context);},child: new Text("Retour", textScaleFactor: 1.1)),
+                ],
+              )
+            ],
+          );
+        }
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,23 +170,23 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                 tileColor: Theme.of(context).accentColor,
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(
-                      context,
-                      // on affiche la page du livre
-                      // info = false --> on affiche le livre pour potentiellement l'ajouter à sa biblihothèque
-                      // info = true --> on affiche juste les détails du livre
-                      MaterialPageRoute(builder: (context) => PimPamPoum()));
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => PimPamPoum()));
                 },
               ),
               ListTile(
-                title: Text('Jeu 2'),
+                title: Text("Undercover"),
                 tileColor: Theme.of(context).accentColor,
                 onTap: () {
-                  // Update the state of the app
-                  // ...
-                  // Then close the drawer
-                  Navigator.pop(context);
-                },
+                    // close the drawer
+                    Navigator.pop(context);
+                    // launch the new page
+                    if(this.players.length > 2){
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => Undercover(players)));
+                    }
+                    else {
+                      messageBox("Erreur", "Désolé, il faut au moins 3 joueurs pour ce jeu.", true);
+                    }
+                  },
               ),
             ],
           ),

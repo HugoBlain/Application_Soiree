@@ -31,7 +31,7 @@ class PimPamPoum extends StatelessWidget {
                                 color: Theme.of(context).textTheme.bodyText1.color,
                                 fontWeight: FontWeight.bold,
                             ),
-                            textScaleFactor: 1.5,
+                            textScaleFactor: 1.8,
                             textAlign: TextAlign.center,
                           ),
                           Container(
