@@ -1,7 +1,7 @@
+import 'package:appli_pour_soiree/Settings.dart';
 import 'package:flutter/material.dart';
 import 'package:appli_pour_soiree/PimPamPoum.dart';
 import 'package:appli_pour_soiree/Undercover.dart';
-
 
 // vue principale pour ajouter/supprimer
 class SelectionJoueurPage extends StatefulWidget {
@@ -13,14 +13,13 @@ class SelectionJoueurPage extends StatefulWidget {
 
 // state
 class _SelectionJoueurPage extends State<SelectionJoueurPage> {
-
   // attributs
   List<String> players = new List();
   var _controller = TextEditingController();
 
   // to display a message
   // display an exemple for rules
-  Future<Null> messageBox(String title, String message, bool barrier) async{
+  Future<Null> messageBox(String title, String message, bool barrier) async {
     return showDialog(
         context: context,
         barrierDismissible: barrier,
@@ -38,19 +37,21 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                       ),
                       new Container(height: 10),
                     ],
-                  )
-              ),
+                  )),
               new Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   new Container(),
-                  new FlatButton(onPressed: (){Navigator.pop(context);},child: new Text("Retour", textScaleFactor: 1.1)),
+                  new FlatButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: new Text("Retour", textScaleFactor: 1.1)),
                 ],
               )
             ],
           );
-        }
-    );
+        });
   }
 
   @override
@@ -58,6 +59,16 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Mega Teuf"),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Settings()));
+            },
+          ),
+        ],
       ),
       body: Container(
         color: Theme.of(context).backgroundColor,
@@ -150,43 +161,48 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
             padding: EdgeInsets.zero,
             children: <Widget>[
               // Header of the drawer
-              Container(
-                color: Theme.of(context).primaryColor,
-                height: 80,
-                alignment: Alignment.centerLeft,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 15,
+              new SizedBox(
+                height: 120.0,
+                child: new DrawerHeader(
+                    child: Center(
+                      child: new Text('Choisis ton jeu',
+                          style: TextStyle(color: Colors.white)),
                     ),
-                    Text("Choisis ton jeu"),
-                  ],
-                ),
+                    decoration: new BoxDecoration(
+                        color: Theme.of(context).primaryColor),
+                    margin: EdgeInsets.zero,
+                    padding: EdgeInsets.zero),
               ),
 
               //First choice and so on
               ListTile(
-                title: Text('Pim Pam Poum'),
+                title: Center(child: Text('Pim Pam Poum')),
                 tileColor: Theme.of(context).accentColor,
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => PimPamPoum()));
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => PimPamPoum()));
                 },
               ),
               ListTile(
-                title: Text("Undercover"),
+                title: Center(child: Text("Undercover")),
                 tileColor: Theme.of(context).accentColor,
                 onTap: () {
-                    // close the drawer
-                    Navigator.pop(context);
-                    // launch the new page
-                    if(this.players.length > 2){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => Undercover(players)));
-                    }
-                    else {
-                      messageBox("Erreur", "Désolé, il faut au moins 3 joueurs pour ce jeu.", true);
-                    }
-                  },
+                  // close the drawer
+                  Navigator.pop(context);
+                  // launch the new page
+                  if (this.players.length > 2) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Undercover(players)));
+                  } else {
+                    messageBox(
+                        "Erreur",
+                        "Désolé, il faut au moins 3 joueurs pour ce jeu.",
+                        true);
+                  }
+                },
               ),
             ],
           ),
