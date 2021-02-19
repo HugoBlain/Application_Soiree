@@ -40,21 +40,21 @@ class _Undercover extends State<Undercover> {
     this.players = players;
   }
 
-  // display an exemple for rules
-  Future<Null> exemple() async{
+  // display message (error or example)
+  Future<Null> displayMessage(String title, String body, bool barrierDismiss) async{
     return showDialog(
         context: context,
-        barrierDismissible: false,
+        barrierDismissible: barrierDismiss,
         builder: (BuildContext context) {
           return new SimpleDialog(
-            title: new Text("Voici un exemple de manche"),
+            title: new Text(title),
             children: [
               new Container(
                 padding: EdgeInsets.all(12),
                 child: Column(
                   children: [
                     new Text(
-                      'Pierre est désigné pour choisir les mots, il entre comme mot commun "chat" et comme mot pour l Undercover "chien". Le jeu commence, le tirage au sort choisit Paul qui a le mot commun pour donner le premier indice et il dit "poil". Jack qui est l Undercover, enchaine avec "animal". Chirac qui a donc lui aussi le mot commun comme Paul, finit par "compagnie".\n\nLes joueurs continue ainsi pendant 2 ou 3 tours, débattent de qui ils pensent être l Undercover et finissent par voter.',
+                      body,
                       textAlign: TextAlign.justify,
                     ),
                     new Container(height: 10),
@@ -200,7 +200,7 @@ class _Undercover extends State<Undercover> {
                           iconSize: 40,
                           color: Colors.black,
                           onPressed: (){
-                            exemple();
+                            displayMessage("Voici un exemple de manche",'Pierre est désigné pour choisir les mots, il entre comme mot commun "chat" et comme mot pour l Undercover "chien". Le jeu commence, le tirage au sort choisit Paul qui a le mot commun pour donner le premier indice et il dit "poil". Jack qui est l Undercover, enchaine avec "animal". Chirac qui a donc lui aussi le mot commun comme Paul, finit par "compagnie".\n\nLes joueurs continue ainsi pendant 2 ou 3 tours, débattent de qui ils pensent être l Undercover et finissent par voter.', true);
                           },
                         )
                       ],
@@ -330,9 +330,14 @@ class _Undercover extends State<Undercover> {
                           ),
                         ),
                         onPressed: (){
-                          setState(() {
-                            selectedView = 3;
-                          });
+                          if(this.commonWord == this.undercoverWord || this.commonWord == "erreur" || this.undercoverWord == "erreur"){
+                            displayMessage("Erreur", "Désolé, les mots choisis sont vides ou identiques. Réessayer!", true);
+                          }
+                          else {
+                            setState(() {
+                              selectedView = 3;
+                            });
+                          }
                         },
                       ),
                     ),

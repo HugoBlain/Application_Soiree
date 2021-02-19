@@ -180,11 +180,11 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                     // close the drawer
                     Navigator.pop(context);
                     // launch the new page
-                    if(this.players.length > 2){
+                    if(this.players.length > 3){
                       Navigator.push(context, MaterialPageRoute(builder: (context) => Undercover(players)));
                     }
                     else {
-                      messageBox("Erreur", "Désolé, il faut au moins 3 joueurs pour ce jeu.", true);
+                      messageBox("Erreur", "Désolé, il faut au moins 4 joueurs pour ce jeu.", true);
                     }
                   },
               ),
