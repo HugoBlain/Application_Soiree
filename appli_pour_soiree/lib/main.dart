@@ -1,40 +1,59 @@
+import 'package:appli_pour_soiree/config.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import './SelectionJoueurPage.dart';
 
-void main() {
+void main() async {
+  await Hive.initFlutter();
+  box = await Hive.openBox('theme');
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    currentTheme.addListener(() {
+      print('change theme');
+      setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    Map<int, Color> color = {
-      50: Color.fromRGBO(253, 87, 57, .1),
-      100: Color.fromRGBO(253, 87, 57, .2),
-      200: Color.fromRGBO(253, 87, 57, .3),
-      300: Color.fromRGBO(253, 87, 57, .4),
-      400: Color.fromRGBO(253, 87, 57, .5),
-      500: Color.fromRGBO(253, 87, 57, .6),
-      600: Color.fromRGBO(253, 87, 57, .7),
-      700: Color.fromRGBO(253, 87, 57, .8),
-      800: Color.fromRGBO(253, 87, 57, .9),
-      900: Color.fromRGBO(253, 87, 57, 1),
-    };
-    // dark = factory ThemeData.dark => ThemeData();
+    var themeDark = ThemeData(
+      // primarySwatch: MaterialColor(0xfffd5739, color),
+
+      primaryColor: Color.fromARGB(255, 189, 140, 250),
+      accentColor: Color.fromARGB(127, 189, 140, 250),
+      shadowColor: Colors.white,
+      backgroundColor: Colors.black,
+
+      cardColor: Color.fromARGB(255, 189, 140, 250),
+      textTheme: TextTheme(bodyText1: TextStyle(color: Colors.white)),
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+    );
+
+    var themeLigth = ThemeData(
+      primaryColor: Color.fromARGB(255, 189, 140, 250),
+      accentColor: Color.fromARGB(127, 189, 140, 250),
+      backgroundColor: Colors.white,
+      cardColor: Color.fromARGB(255, 189, 140, 250),
+      textTheme: TextTheme(bodyText1: TextStyle(color: Colors.black)),
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+    );
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        // primarySwatch: MaterialColor(0xfffd5739, color),
-
-        primaryColor: Color.fromARGB(255, 247, 108, 0),
-        accentColor: Color.fromARGB(127, 247, 108, 0),
-
-        backgroundColor: Colors.black,
-
-        cardColor: Color.fromARGB(255, 247, 108, 0),
-        textTheme: TextTheme(bodyText1: TextStyle(color: Colors.white)),
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
+      theme: themeLigth,
+      darkTheme: themeDark,
+      themeMode: currentTheme.currentTheme(),
       home: SelectionJoueurPage(),
     );
   }
