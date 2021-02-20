@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:appli_pour_soiree/PimPamPoum.dart';
 import 'package:appli_pour_soiree/Undercover.dart';
+import 'package:appli_pour_soiree/Settings.dart';
 
 
 // vue principale pour ajouter/supprimer
@@ -44,7 +45,12 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   new Container(),
-                  new FlatButton(onPressed: (){Navigator.pop(context);},child: new Text("Retour", textScaleFactor: 1.1)),
+                  new FlatButton(
+                      onPressed: (){
+                        Navigator.pop(context);
+                      },
+                      child: new Text("Retour", textScaleFactor: 1.1)
+                  ),
                 ],
               )
             ],
@@ -58,6 +64,16 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Mega Teuf"),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () {
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Settings()));
+            },
+          ),
+        ],
       ),
       body: Container(
         color: Theme.of(context).backgroundColor,
@@ -116,7 +132,6 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                       width: MediaQuery.of(context).size.width / 1.5,
                       height: MediaQuery.of(context).size.height / 12,
                       child: Card(
-                        // color: Color.fromARGB(255, 241, 48, 77),
                         elevation: 10,
                         shape: RoundedRectangleBorder(
                             side: BorderSide.none,
@@ -150,41 +165,53 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
             padding: EdgeInsets.zero,
             children: <Widget>[
               // Header of the drawer
-              Container(
-                color: Theme.of(context).primaryColor,
-                height: 80,
-                alignment: Alignment.centerLeft,
-                child: Row(
-                  children: [
-                    Container(
-                      width: 15,
-                    ),
-                    Text("Choisis ton jeu"),
-                  ],
+            new SizedBox(
+              height: 120.0,
+              child: new DrawerHeader(
+                child: Center(
+                  child: new Text(
+                    'Choisis ton jeu',
+                    style: TextStyle(color: Colors.white)
+                  ),
                 ),
+                decoration: new BoxDecoration(
+                    color: Theme.of(context).primaryColor
+                ),
+                margin: EdgeInsets.zero,
+                padding: EdgeInsets.zero
               ),
-
+            ),
               //First choice and so on
               ListTile(
-                title: Text('Pim Pam Poum'),
+                title: Center(child: Text('Pim Pam Poum')),
                 tileColor: Theme.of(context).accentColor,
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => PimPamPoum()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => PimPamPoum())
+                  );
                 },
               ),
               ListTile(
-                title: Text("Undercover"),
+                title: Center(child: Text("Undercover")),
                 tileColor: Theme.of(context).accentColor,
                 onTap: () {
                     // close the drawer
                     Navigator.pop(context);
                     // launch the new page
                     if(this.players.length > 3){
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => Undercover(players)));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Undercover(players))
+                      );
                     }
                     else {
-                      messageBox("Erreur", "Désolé, il faut au moins 4 joueurs pour ce jeu.", true);
+                      messageBox(
+                          "Erreur",
+                          "Désolé, il faut au moins 4 joueurs pour ce jeu.",
+                          true
+                      );
                     }
                   },
               ),

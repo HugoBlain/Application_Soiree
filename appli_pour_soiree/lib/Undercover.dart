@@ -35,6 +35,11 @@ class _Undercover extends State<Undercover> {
   String commonWord = "erreur";
   String undercoverWord = "erreur";
 
+  // list for the game
+  List<String> playersGame = [];
+  List<String> wordsGame = [];
+
+
   // constructor
   _Undercover (List<String> players){
     this.players = players;
@@ -74,8 +79,31 @@ class _Undercover extends State<Undercover> {
     );
   }
 
+  // display the word which corresoond to the player
+  Future<Null> displayWord(String word) async{
+    return showDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          return new SimpleDialog(
+            children: [
+              new Container(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  word,
+                  textAlign: TextAlign.center,
+                  textScaleFactor: 1.5,
+                ),
+              )
+            ],
+          );
+        }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final orientation = MediaQuery.of(context).orientation;
     double hauteur = MediaQuery.of(context).size.height;
     double largeur = MediaQuery.of(context).size.width;
 
@@ -89,8 +117,8 @@ class _Undercover extends State<Undercover> {
               children: [
                 Icon(
                   Icons.psychology_outlined,
-                  size: 150,
-                  color: Colors.white,
+                  size: hauteur*0.25,
+                  color: Theme.of(context).textTheme.bodyText1.color,
                 ),
                 Container(height: hauteur*0.05),
                 Text(
@@ -110,7 +138,6 @@ class _Undercover extends State<Undercover> {
                     color: Theme.of(context).primaryColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18.0),
-                        side: BorderSide(color: Colors.red)
                     ),
                     child: Text(
                       "Bien sûr, Go!",
@@ -136,7 +163,6 @@ class _Undercover extends State<Undercover> {
                     color: Theme.of(context).primaryColor,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18.0),
-                        side: BorderSide(color: Colors.red)
                     ),
                     child: Text(
                       "Voir les règles",
@@ -213,15 +239,14 @@ class _Undercover extends State<Undercover> {
                         color: Theme.of(context).textTheme.bodyText1.color,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18.0),
-                            side: BorderSide(color: Colors.red)
                         ),
                         child: Text(
                           "Jouer",
                           style: TextStyle(
                               color: Theme.of(context).primaryColor,
-                              fontSize: 25,
                               fontWeight: FontWeight.bold
                           ),
+                          textScaleFactor: 1.8,
                         ),
                         onPressed: (){
                           setState(() {
@@ -319,15 +344,14 @@ class _Undercover extends State<Undercover> {
                         color: Theme.of(context).primaryColor,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18.0),
-                            side: BorderSide(color: Colors.red)
                         ),
                         child: Text(
                           "Lancer la manche!",
                           style: TextStyle(
                               color: Theme.of(context).textTheme.bodyText1.color,
-                              fontSize: 25,
                               fontWeight: FontWeight.bold
                           ),
+                          textScaleFactor: 1.7,
                         ),
                         onPressed: (){
                           if(this.commonWord == this.undercoverWord || this.commonWord == "erreur" || this.undercoverWord == "erreur"){
@@ -335,6 +359,19 @@ class _Undercover extends State<Undercover> {
                           }
                           else {
                             setState(() {
+                              // clean previous list
+                              this.playersGame.clear();
+                              this.wordsGame.clear();
+                              // build new list which contains player's name and word for the sleeve
+                              // index match between the two list and the player who choose the words doesn't play for this sleeve
+                              for(int i=0; i<this.players.length; i++){
+                                if(i != this.indexWhoChooseWords){
+                                  this.playersGame.add(players[i]);
+                                  this.wordsGame.add(this.commonWord);
+                                }
+                              }
+                              // draw lots for the player who will be the Undercover
+                              this.wordsGame[new Random().nextInt(playersGame.length)] = this.undercoverWord;
                               selectedView = 3;
                             });
                           }
@@ -349,12 +386,92 @@ class _Undercover extends State<Undercover> {
         ),
       ),
       // 3 --> game
-      new Center(
-        child: Text(
-          "TADA....",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 50
+      Center(
+        child: Container(
+          padding: EdgeInsets.only(top: hauteur*0.02, bottom: hauteur*0.05, left: largeur*0.05, right: largeur*0.05),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Card(
+                child: Container(
+                  padding: EdgeInsets.only(top: 20, left: 15, right: 15, bottom: 20),
+                  child: Text(
+                    "Decouvrer vos mots chacun votre tour, puis commencer à jouer!",
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyText1.color,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                    textScaleFactor: 1.8,
+                  ),
+                ),
+              ),
+              Container(
+                height: hauteur*0.02,
+              ),
+
+              Expanded(
+                child: Container(
+                  child: GridView.builder(
+                    itemCount: this.playersGame.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      childAspectRatio: 2/1
+                    ),
+                    itemBuilder: (context, index){
+                      return RaisedButton(
+                        color: Theme.of(context).primaryColor,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        child: Text(
+                          this.playersGame[index],
+                          style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyText1.color,
+                              fontWeight: FontWeight.normal
+                          ),
+                          textScaleFactor: 1.4,
+                        ),
+                        onPressed: (){
+                          displayWord(this.wordsGame[index]);
+                        },
+                      );
+                    }
+                  )
+                ),
+              ),
+
+              RaisedButton(
+                color: Theme.of(context).primaryColor,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18.0),
+                ),
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    "Fin de la manche, choisir de nouveaux mots",
+                    style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyText1.color,
+                        fontWeight: FontWeight.bold
+                    ),
+                    textScaleFactor: 1.5,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                onPressed: (){
+                  setState(() {
+                    this.indexWhoChooseWords += 1;
+                    if(this.indexWhoChooseWords == players.length){
+                      this.indexWhoChooseWords = 0;
+                    }
+                    selectedView = 2;
+                  });
+                },
+              ),
+
+            ],
           ),
         ),
       )
