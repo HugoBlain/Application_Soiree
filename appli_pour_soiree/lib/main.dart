@@ -15,21 +15,17 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-
-
 class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
     currentTheme.addListener(() {
-      print('change theme');
       setState(() {});
     });
   }
 
   @override
   Widget build(BuildContext context) {
-
     var themeDark = ThemeData(
       // primarySwatch: MaterialColor(0xfffd5739, color),
       primaryColor: Color.fromARGB(255, 189, 140, 250),
