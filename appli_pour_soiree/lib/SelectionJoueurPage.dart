@@ -229,6 +229,17 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                   }
                 },
               ),
+              ListTile(
+                title: Center(child: Text('Course plateau')),
+                tileColor: Theme.of(context).accentColor,
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => BoardGame(players)));
+                },
+              ),
             ],
           ),
         ),
