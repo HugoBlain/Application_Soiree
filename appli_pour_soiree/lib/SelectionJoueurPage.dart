@@ -216,7 +216,7 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                   // close the drawer
                   Navigator.pop(context);
                   // launch the new page
-                  if (this.players.length > 2) {
+                  if (this.players.length > 3) {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -224,7 +224,7 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                   } else {
                     messageBox(
                         "Erreur",
-                        "Désolé, il faut au moins 3 joueurs pour ce jeu.",
+                        "Désolé, il faut au moins 4 joueurs pour ce jeu.",
                         true);
                   }
                 },
@@ -233,11 +233,20 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                 title: Center(child: Text('Course plateau')),
                 tileColor: Theme.of(context).accentColor,
                 onTap: () {
+                  // close the drawer
                   Navigator.pop(context);
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => BoardGame(players)));
+                  // launch the new page
+                  if (this.players.length > 1) {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => BoardGame(players)));
+                  } else {
+                    messageBox(
+                        "Erreur",
+                        "Désolé, il faut au moins 2 joueurs pour ce jeu.",
+                        true);
+                  }
                 },
               ),
             ],

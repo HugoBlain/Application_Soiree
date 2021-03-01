@@ -113,71 +113,72 @@ class _Undercover extends State<Undercover> {
             right: largeur * 0.05),
         child: new Center(
             child: Column(
-          children: [
-            Icon(
-              Icons.psychology_outlined,
-              size: hauteur * 0.25,
-              color: Theme.of(context).textTheme.bodyText1.color,
-            ),
-            Container(height: hauteur * 0.05),
-            Text(
-              "Bienvenue!\nConnaissez-vous les règles?",
-              style: TextStyle(
+              children: [
+                Icon(
+                  Icons.psychology_outlined,
+                  size: hauteur * 0.25,
                   color: Theme.of(context).textTheme.bodyText1.color,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            Container(height: hauteur * 0.05),
-            Container(
-              width: largeur * 0.75,
-              height: hauteur * 0.075,
-              child: RaisedButton(
-                color: Theme.of(context).primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18.0),
                 ),
-                child: Text(
-                  "Bien sûr, Go!",
+                Container(height: hauteur * 0.05),
+                Text(
+                  "Bienvenue!\nConnaissez-vous les règles?",
                   style: TextStyle(
                       color: Theme.of(context).textTheme.bodyText1.color,
                       fontSize: 25,
                       fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
                 ),
-                onPressed: () {
-                  setState(() {
-                    this.indexWhoChooseWords =
-                        new Random().nextInt(players.length);
-                    selectedView = 2;
-                  });
-                },
-              ),
-            ),
-            Container(height: hauteur * 0.02),
-            Container(
-              width: largeur * 0.75,
-              height: hauteur * 0.075,
-              child: RaisedButton(
-                color: Theme.of(context).primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18.0),
+                Container(height: hauteur * 0.05),
+                Container(
+                  width: largeur * 0.75,
+                  height: hauteur * 0.075,
+                  child: RaisedButton(
+                    color: Theme.of(context).primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                    ),
+                    child: Text(
+                      "Bien sûr, Go!",
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyText1.color,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        this.indexWhoChooseWords =
+                            new Random().nextInt(players.length);
+                        selectedView = 2;
+                      });
+                    },
+                  ),
                 ),
-                child: Text(
-                  "Voir les règles",
-                  style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyText1.color,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold),
+                Container(height: hauteur * 0.02),
+                Container(
+                  width: largeur * 0.75,
+                  height: hauteur * 0.075,
+                  child: RaisedButton(
+                    color: Theme.of(context).primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                    ),
+                    child: Text(
+                      "Voir les règles",
+                      style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyText1.color,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        selectedView = 1;
+                      });
+                    },
+                  ),
                 ),
-                onPressed: () {
-                  setState(() {
-                    selectedView = 1;
-                  });
-                },
-              ),
-            ),
-          ],
-        )),
+              ],
+            )
+        ),
       ),
       // 1 --> rules
       Container(
@@ -454,7 +455,8 @@ class _Undercover extends State<Undercover> {
                               displayWord(this.wordsGame[index]);
                             },
                           );
-                        })),
+                        })
+                ),
               ),
               RaisedButton(
                 color: Theme.of(context).primaryColor,

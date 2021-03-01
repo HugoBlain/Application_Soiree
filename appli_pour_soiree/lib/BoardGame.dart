@@ -1,10 +1,15 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-
+import 'dart:typed_data';
+import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
+import 'package:flutter/widgets.dart';
 import 'package:zflutter/zflutter.dart';
+import 'dart:ui' as ui;
 
 import 'Dice.dart';
 
@@ -101,8 +106,7 @@ class _MyDialogState extends State<MyDialog> with SingleTickerProviderStateMixin
       ),
       children: [
         Container(
-          height: hauteur*0.4,
-          width: hauteur*0.4,
+          height: hauteur*0.6,
           child: ZIllustration(
             // to adjust dice size
             zoom: 1.5,
@@ -136,19 +140,83 @@ class _MyDialogState extends State<MyDialog> with SingleTickerProviderStateMixin
   }
 }
 
+// to drawn pions on the board
+class PionsPainter extends CustomPainter {
+
+  // attributes
+  List<String> players;
+  List<int> playerPosition = [];
+  List<ui.Image> playersImages;
+  ui.Image board;
+  int currentPlayer;
+
+  // constructor
+  PionsPainter(int curentPlayer, List<String> players, List<ui.Image> playersImages, ui.Image board, List<int> position) {
+    this.currentPlayer = curentPlayer;
+    this.players = players;
+    this.playersImages = playersImages;
+    this.board = board;
+    this.playerPosition = position;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) async {
+    if(this.playersImages != null){
+      print("paint !! ");
+
+      // Define a paint object
+      final paint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.0
+        ..color = Colors.indigo;
+
+      // display board image
+      canvas.drawImage(board, Offset.zero, Paint());
+
+      //canvas.drawImage(playersImages[0], Offset(50.0, 100.0), Paint());
+
+      paintImage(
+          canvas: canvas,
+          rect: Rect.fromCenter(center: Offset(size.width/14,size.height/1.158), height: 100, width: 100),
+          //rect: Rect.fromLTWH(0, 0, 200, 200),
+          image: this.playersImages[0],
+          fit: BoxFit.scaleDown,
+          repeat: ImageRepeat.noRepeat,
+          scale: 1.0,
+          alignment: Alignment.center,
+          flipHorizontally: false,
+          filterQuality: FilterQuality.high
+      );
+
+    }
+  }
+
+  @override
+  bool shouldRepaint(PionsPainter oldDelegate) =>
+      playerPosition.toString() != oldDelegate.playerPosition.toString();
+}
+
+
+
+
+
 class BoardGame extends StatefulWidget {
 
   // attributes
   List<String> players;
+  List<int> playerPosition = [];
 
   // constructor
   BoardGame(List<String> players) {
     this.players = players;
+    for(var player in players){
+      this.playerPosition.add(0);
+  }
   }
 
   @override
   State<StatefulWidget> createState() {
-    return _BoardGame(this.players);
+    return _BoardGame(this.players, this.playerPosition);
   }
 }
 
@@ -156,13 +224,79 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
 
   // attributes
   List<String> players;
+  List<int> playerPosition;
+  List<String> imagePaths = ["vodka.pg", "gin-tonic.png", "jagermeinster.png", "whiskey.png"];
+  List<ui.Image> playersImages = [];
+  ui.Image board;
+  bool loadingCompleted = false;
+  int currentPlayer = 0;
+  int diceValue = 1;
+
 
   // constructor
-  _BoardGame(List<String> players) {
+  _BoardGame(List<String> players, List<int> position) {
     this.players = players;
+    this.playerPosition = position;
   }
-  // dice's value
-  int diceValue = 1;
+
+  @override
+  void initState(){
+    super.initState();
+    // landscape view
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+    // hide system information
+    SystemChrome.setEnabledSystemUIOverlays([]);
+    // load image to ui.Image
+    init();
+  }
+
+  // to load and convert image for the canvas
+  Future<Null> init() async{
+    ByteData data;
+    Uint8List list;
+    ui.Image img;
+    // player's images
+    for(int i = 0; i<this.imagePaths.length; i++){
+      data = await rootBundle.load("images/vodka.png");
+      list = data.buffer.asUint8List();
+      img = await loadImage(new Uint8List.view(data.buffer));
+      this.playersImages.add(img);
+    }
+    // board's image
+    data = await rootBundle.load("images/GameOfGooseBoard.png");
+    img =  await loadImage(new Uint8List.view(data.buffer));
+    this.board = img;
+    setState(() {
+      this.loadingCompleted = true;
+    });
+    print("Images ui chargées");
+  }
+  Future<ui.Image> loadImage(List<int> img) async {
+    final Completer<ui.Image> completer = new Completer();
+    ui.decodeImageFromList(img, (ui.Image img) {
+      return completer.complete(img);
+    });
+    return completer.future;
+  }
+
+
+  @override
+  dispose(){
+    // portrait view
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    // system info
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -171,40 +305,86 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
     double largeur = MediaQuery.of(context).size.width;
 
     return Scaffold(
+        /*
         appBar: AppBar(
           title: Text("Plateau de jeux"),
         ),
+        */
+
         floatingActionButton: FloatingActionButton(
           child: Icon(
-            Icons.threesixty,
+            Icons.arrow_back_ios_outlined
           ),
           onPressed: () {
-            diceValue = Random().nextInt(6) + 1;
-            showDialog(
-                barrierDismissible: true,
-                context: context,
-                builder: (_) {
-                  return MyDialog(this.diceValue);
-                });
-            print("valeur du dé : " + diceValue.toString());
+            print(this.playerPosition.toString());
+            //Navigator.pop(context);
           },
         ),
-        body: Container(
+
+        body: !this.loadingCompleted ? new Center(child: new SizedBox(width: 100.0, height: 100.0, child: new CircularProgressIndicator(strokeWidth: 10.0,),)) : Container(
           color: Theme.of(context).backgroundColor,
           child: Center(
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(40.0),
-              ),
-              child: Container(
-                height: hauteur*0.4,
-                width: largeur*0.8,
-                child: Center(
-                  child: Text(
-                    "Voici le résultat",
-                  )
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                // grid
+                Container(
+                  color: Colors.red,
+                  width: largeur*0.7,
+                  child: FittedBox(
+                    child: SizedBox(
+                      width: this.board.width.toDouble(),
+                      height: this.board.height.toDouble(),
+                      child: CustomPaint(
+                        painter: PionsPainter(this.currentPlayer, this.players, this.playersImages, this.board, this.playerPosition),
+                      ),
+                    ),
+                  ),
                 ),
-              )
+                // button to play --> next player
+                Container(
+                  width: largeur*0.25,
+                  child: RaisedButton(
+                    color: Theme.of(context).primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18.0),
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.only(top: 10, bottom: 10),
+                      child: Text(
+                        this.players[this.currentPlayer]+",\nà toi de jouer!",
+                        textScaleFactor: 1.7,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyText1.color,
+                            fontWeight: FontWeight.bold
+                        ),
+                      ),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        // trhow dice
+                        diceValue = Random().nextInt(6) + 1;
+                        // dice animation
+                        showDialog(
+                            barrierDismissible: true,
+                            context: context,
+                            builder: (_) {
+                              return MyDialog(this.diceValue);
+                            });
+                        print("valeur du dé : " + diceValue.toString());
+                        //position ++
+                        this.playerPosition[this.currentPlayer] += 1;
+                        // next player
+                        this.currentPlayer += 1;
+                        if(this.currentPlayer == this.players.length){
+                          this.currentPlayer = 0;
+                        }
+                      });
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         )
