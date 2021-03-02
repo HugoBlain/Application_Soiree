@@ -10,6 +10,8 @@ import 'package:flutter/physics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:zflutter/zflutter.dart';
 import 'dart:ui' as ui;
+import 'dart:math' as math;
+
 
 import 'Dice.dart';
 
@@ -149,6 +151,11 @@ class PionsPainter extends CustomPainter {
   List<ui.Image> playersImages;
   ui.Image board;
   int currentPlayer;
+  //                       0      1      2      3    4     5      6     7      8     9     10    11    12
+  List<double> xFactor =  [14   , 3.3 , 2.755, 2.4 , 2.1 , 1.865, 1.65, 1.49, 1.38, 1.26, 1.17, 1.125, 1.1 , 0, 0, 0];
+  List<double> yFactor =  [1.158, 1.15, 1.15 , 1.15, 1.15, 1.14 , 1.14, 1.14, 1.15, 1.2 , 1.29, 1.42 , 1.59, 0, 0, 0];
+  List<double> rotation = [0    , 0   , 0    , 0   , 0   , 0    , 0   , 0   , 18  , 33  , 45  , 55   , 65  , 0, 0, 0];
+
 
   // constructor
   PionsPainter(int curentPlayer, List<String> players, List<ui.Image> playersImages, ui.Image board, List<int> position) {
@@ -158,6 +165,11 @@ class PionsPainter extends CustomPainter {
     this.board = board;
     this.playerPosition = position;
   }
+  
+  double inRadians(double degrees){
+    return degrees*math.pi /180;
+  }
+
 
   @override
   void paint(Canvas canvas, Size size) async {
@@ -173,21 +185,25 @@ class PionsPainter extends CustomPainter {
       // display board image
       canvas.drawImage(board, Offset.zero, Paint());
 
-      //canvas.drawImage(playersImages[0], Offset(50.0, 100.0), Paint());
-
-      paintImage(
-          canvas: canvas,
-          rect: Rect.fromCenter(center: Offset(size.width/14,size.height/1.158), height: 100, width: 100),
-          //rect: Rect.fromLTWH(0, 0, 200, 200),
-          image: this.playersImages[0],
-          fit: BoxFit.scaleDown,
-          repeat: ImageRepeat.noRepeat,
-          scale: 1.0,
-          alignment: Alignment.center,
-          flipHorizontally: false,
-          filterQuality: FilterQuality.high
-      );
-
+      // players
+      for(int i = 0; i<this.players.length; i++){
+        canvas.translate(size.width/this.xFactor[this.playerPosition[i]], size.height/this.yFactor[this.playerPosition[i]]);
+        canvas.rotate(-inRadians(this.rotation[this.playerPosition[i]]));
+        paintImage(
+            canvas: canvas,
+            rect: Rect.fromCenter(center: Offset(0.0, 0.0), height: 100, width: 100),
+            //rect: Rect.fromLTWH(size.width/2, size.height/2, 100, 100),
+            image: this.playersImages[i],
+            fit: BoxFit.scaleDown,
+            repeat: ImageRepeat.noRepeat,
+            scale: 1.0,
+            alignment: Alignment.center,
+            flipHorizontally: false,
+            filterQuality: FilterQuality.high
+        );
+        canvas.rotate(inRadians(this.rotation[this.playerPosition[i]]));
+        canvas.translate(-size.width/this.xFactor[this.playerPosition[i]], -size.height/this.yFactor[this.playerPosition[i]]);
+      }
     }
   }
 
@@ -205,6 +221,7 @@ class BoardGame extends StatefulWidget {
   // attributes
   List<String> players;
   List<int> playerPosition = [];
+  List<String> imagePaths = ["vodka.png", "jagermeinster.png", "gin-tonic.png", "whiskey.png"];
 
   // constructor
   BoardGame(List<String> players) {
@@ -216,7 +233,7 @@ class BoardGame extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _BoardGame(this.players, this.playerPosition);
+    return _BoardGame(this.players, this.playerPosition, this.imagePaths);
   }
 }
 
@@ -225,18 +242,19 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
   // attributes
   List<String> players;
   List<int> playerPosition;
-  List<String> imagePaths = ["vodka.pg", "gin-tonic.png", "jagermeinster.png", "whiskey.png"];
   List<ui.Image> playersImages = [];
   ui.Image board;
   bool loadingCompleted = false;
   int currentPlayer = 0;
   int diceValue = 1;
+  List<String> imagePaths;
 
 
   // constructor
-  _BoardGame(List<String> players, List<int> position) {
+  _BoardGame(List<String> players, List<int> position, List<String> paths) {
     this.players = players;
     this.playerPosition = position;
+    this.imagePaths = paths;
   }
 
   @override
@@ -260,7 +278,7 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
     ui.Image img;
     // player's images
     for(int i = 0; i<this.imagePaths.length; i++){
-      data = await rootBundle.load("images/vodka.png");
+      data = await rootBundle.load("images/"+this.imagePaths[i]);
       list = data.buffer.asUint8List();
       img = await loadImage(new Uint8List.view(data.buffer));
       this.playersImages.add(img);
@@ -316,8 +334,7 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
             Icons.arrow_back_ios_outlined
           ),
           onPressed: () {
-            print(this.playerPosition.toString());
-            //Navigator.pop(context);
+            Navigator.pop(context);
           },
         ),
 
@@ -329,7 +346,6 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
               children: [
                 // grid
                 Container(
-                  color: Colors.red,
                   width: largeur*0.7,
                   child: FittedBox(
                     child: SizedBox(
