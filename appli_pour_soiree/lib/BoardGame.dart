@@ -18,19 +18,27 @@ import 'Dice.dart';
 class MyDialog extends StatefulWidget {
 
   int diceValue;
+  List<int> playerPosition;
+  int currentPlayer;
 
-  MyDialog(int diceValue){
+  MyDialog(int diceValue, List<int> position, int currentPlayer){
     this.diceValue = diceValue;
+    this.playerPosition = position;
+    this.currentPlayer = currentPlayer;
   }
 
   @override
-  _MyDialogState createState() => new _MyDialogState(this.diceValue);
+  _MyDialogState createState() => new _MyDialogState(this.diceValue, this.playerPosition, this.currentPlayer);
 }
 
 class _MyDialogState extends State<MyDialog> with SingleTickerProviderStateMixin {
 
   // value for the animation
   int diceValue;
+  List<int> playerPosition;
+  int currentPlayer;
+
+
 
   // for dice's animation
   AnimationController animationController;
@@ -39,8 +47,10 @@ class _MyDialogState extends State<MyDialog> with SingleTickerProviderStateMixin
   double zRotation = 0;
 
   // constructor
-  _MyDialogState(int diceValue) {
+  _MyDialogState(int diceValue, List<int> position, int currentPlayer) {
     this.diceValue = diceValue;
+    this.playerPosition = position;
+    this.currentPlayer = currentPlayer;
   }
 
   @override
@@ -151,10 +161,10 @@ class PionsPainter extends CustomPainter {
   List<ui.Image> playersImages;
   ui.Image board;
   int currentPlayer;
-  //                       0      1      2      3    4     5      6     7      8     9     10    11    12
-  List<double> xFactor =  [14   , 3.3 , 2.755, 2.4 , 2.1 , 1.865, 1.65, 1.49, 1.38, 1.26, 1.17, 1.125, 1.1 , 0, 0, 0];
-  List<double> yFactor =  [1.158, 1.15, 1.15 , 1.15, 1.15, 1.14 , 1.14, 1.14, 1.15, 1.2 , 1.29, 1.42 , 1.59, 0, 0, 0];
-  List<double> rotation = [0    , 0   , 0    , 0   , 0   , 0    , 0   , 0   , 18  , 33  , 45  , 55   , 65  , 0, 0, 0];
+  //                       0      1      2      3    4     5      6     7      8     9     10    11    12      13     14    15    16     17   18     19    20     21   22       23    24    25   26    27   28       29   30     31     32    33     34    35     36    37     38    39    40   41      42    43    44    45    46    47    48    49    50     51     52     53    54   55     56   57     58    59    60   61     62
+  List<double> xFactor =  [14   , 3.3 , 2.755, 2.4 , 2.1 , 1.865, 1.65, 1.49, 1.38, 1.26, 1.17, 1.125, 1.1 , 1.082, 1.079, 1.09, 1.115, 1.16, 1.25, 1.39, 1.545, 1.7 , 1.875, 2.12 , 2.45, 2.84, 3.4 , 4.3, 5.4   ,  6.5, 7.8  , 8.5  , 8.5 , 7.5 ,  6.3, 5.1  ,  4.05,  3.32, 2.79, 2.4 , 2.1 , 1.86 , 1.65, 1.49, 1.37, 1.27, 1.21, 1.19, 1.2 , 1.22, 1.295,  1.408, 1.58, 1.83, 2.11, 2.45, 2.86, 3.4 , 4.3 , 4.8 , 4.5 , 3.9 , 3.25, 3                   ];
+  List<double> yFactor =  [1.158, 1.15, 1.15 , 1.15, 1.15, 1.14 , 1.14, 1.14, 1.15, 1.2 , 1.29, 1.42 , 1.59, 1.82 , 2.2  , 2.75, 3.48 , 4.55, 6.9 , 10  ,  10.5, 10.5, 10.5 ,  10.5, 10.5, 10.5, 10.5, 8  , 5.7   ,  4.2,  3.27,  2.6 ,  2.1, 1.79,  1.6, 1.455,  1.37,  1.33, 1.33, 1.33, 1.33, 1.33 , 1.33, 1.33, 1.35, 1.47, 1.68, 1.93, 2.27, 2.75, 3.5  , 4.2   , 4.45, 4.45, 4.45, 4.45, 4.45, 4.25, 3.25, 2.33, 1.93, 1.74, 1.65, 2.5           ];
+  List<double> rotation = [0    , 0   , 0    , 0   , 0   , 0    , 0   , 0   , 18  , 33  , 45  , 55   , 65  , 78   , 95   , 106 , 120  , 130 , 145 , 165 ,  180 , 180 , 180  ,  180 , 180 , 180 , 190 , 210,  222  ,  233,   245,  -100,  -77, -60 ,  -45, -35  ,  -23 ,  -10 , 0   , 0   , 0   , 0    , 0   , 5   , 20  , 45  , 65  , 80  , 100 , 115 , 140  , 160   , 180 , 180 , 180 , 180 , 180 , -160, -125, -90 , -55 , -37 , -15 , 0       ];
 
 
   // constructor
@@ -386,11 +396,14 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                             barrierDismissible: true,
                             context: context,
                             builder: (_) {
-                              return MyDialog(this.diceValue);
+                              return MyDialog(this.diceValue, this.playerPosition, this.currentPlayer);
                             });
                         print("valeur du dé : " + diceValue.toString());
                         //position ++
-                        this.playerPosition[this.currentPlayer] += 1;
+                        this.playerPosition[this.currentPlayer] += this.diceValue;
+                        if(this.playerPosition[this.currentPlayer] > 63){
+                          this.playerPosition[this.currentPlayer] = 0;
+                        }
                         // next player
                         this.currentPlayer += 1;
                         if(this.currentPlayer == this.players.length){
