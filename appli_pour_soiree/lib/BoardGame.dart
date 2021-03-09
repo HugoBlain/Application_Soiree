@@ -269,7 +269,7 @@ class _RuleDialog extends State<RuleDialog> {
       children: [
         Container(
           height: height*0.5,
-          child: Image.asset("GIF/well_done.gif")
+          child: Image.asset(this.gif)
         ),
         Container(
           padding: EdgeInsets.only(top: 5, bottom: 10, right: 20, left: 20),
@@ -385,7 +385,7 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
       data = await rootBundle.load("images/GameOfGooseBoard-white.png");
     }
     else {
-      data = await rootBundle.load("images/GameOfGooseBoard-black.png");
+      data = await rootBundle.load("images/GameOfGooseBoard-black-colors.png");
     }
     img =  await loadImage(new Uint8List.view(data.buffer));
     this.board = img;
@@ -430,7 +430,6 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
           child: Icon(
             Icons.arrow_back_ios_outlined
           ),
-          /*
           onPressed: () async {
             bool quit = await showDialog(
               context: this.context,
@@ -452,16 +451,6 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
             if(quit){
               Navigator.pop(context);
             }
-          },
-          */
-          onPressed: () async {
-            await showDialog(
-                barrierDismissible: true,
-                context: context,
-                builder: (_) {
-                  return RuleDialog("GIF"+this.ruleList.gif[1], this.ruleList.title[1], this.ruleList.rule[1]);
-                }
-            );
           },
         ),
         body: !this.loadingCompleted ? new Center(child: new SizedBox(width: 100.0, height: 100.0, child: new CircularProgressIndicator(strokeWidth: 10.0,),)) : Container(
@@ -518,13 +507,23 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                                 return MyDialog(this.diceValue, this.playerPosition, this.currentPlayer);
                               }
                           );
+                          // position ++
                           setState(() {
-                            //position ++
                             this.playerPosition[this.currentPlayer] += this.diceValue;
                             if(this.playerPosition[this.currentPlayer] > 63){
-                              this.playerPosition[this.currentPlayer] = 0;
+                              this.playerPosition[this.currentPlayer] = 63;
                             }
-                            // next player
+                          });
+                          // display action
+                          await showDialog(
+                              barrierDismissible: true,
+                              context: context,
+                              builder: (_) {
+                                return RuleDialog("GIF/"+this.ruleList.gif[this.playerPosition[this.currentPlayer]-1], this.ruleList.title[this.playerPosition[this.currentPlayer]-1], this.ruleList.rule[this.playerPosition[this.currentPlayer]-1]);
+                              }
+                          );
+                          // next player
+                          setState(() {
                             this.currentPlayer += 1;
                             if(this.currentPlayer == this.players.length){
                               this.currentPlayer = 0;
