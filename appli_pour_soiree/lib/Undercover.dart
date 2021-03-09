@@ -114,9 +114,9 @@ class _Undercover extends State<Undercover> {
         child: new Center(
             child: Column(
               children: [
-                Icon(
-                  Icons.psychology_outlined,
-                  size: hauteur * 0.25,
+                Image.asset(
+                  "images/secret-agent.png",
+                  height: hauteur*0.25,
                   color: Theme.of(context).textTheme.bodyText1.color,
                 ),
                 Container(height: hauteur * 0.05),
@@ -457,6 +457,9 @@ class _Undercover extends State<Undercover> {
                           );
                         })
                 ),
+              ),
+              Container(
+                height: hauteur * 0.02,
               ),
               RaisedButton(
                 color: Theme.of(context).primaryColor,

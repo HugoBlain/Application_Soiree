@@ -14,6 +14,8 @@ import 'dart:math' as math;
 
 
 import 'Dice.dart';
+import 'Rules.dart';
+import 'config.dart';
 
 class MyDialog extends StatefulWidget {
 
@@ -37,8 +39,6 @@ class _MyDialogState extends State<MyDialog> with SingleTickerProviderStateMixin
   int diceValue;
   List<int> playerPosition;
   int currentPlayer;
-
-
 
   // for dice's animation
   AnimationController animationController;
@@ -220,9 +220,88 @@ class PionsPainter extends CustomPainter {
   @override
   bool shouldRepaint(PionsPainter oldDelegate) =>
       playerPosition.toString() != oldDelegate.playerPosition.toString();
+
+} // custom painter
+
+
+
+class RuleDialog extends StatefulWidget {
+
+  String gif;
+  String title;
+  String rule;
+
+  RuleDialog (String gif, String title, String rule) {
+    this.gif = gif;
+    this.title = title;
+    this.rule = rule;
+  }
+
+  @override
+  State<StatefulWidget> createState() {
+    return new _RuleDialog(this.gif, this.title, this.rule);
+  }
+
 }
 
+class _RuleDialog extends State<RuleDialog> {
 
+  String gif;
+  String title;
+  String rule;
+
+  _RuleDialog (String gif, String title, String rule) {
+    this.gif = gif;
+    this.title = title;
+    this.rule = rule;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
+
+    return SimpleDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      children: [
+        Container(
+          height: height*0.5,
+          child: Image.asset("GIF/well_done.gif")
+        ),
+        Container(
+          padding: EdgeInsets.only(top: 5, bottom: 10, right: 20, left: 20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                this.title,
+                textScaleFactor: 1.8,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Container(
+                height: 5,
+              ),
+              Container(
+                width: width*0.5,
+                child: Text(
+                  this.rule,
+                  textScaleFactor: 1.3,
+                  textAlign: TextAlign.justify,
+                ),
+              )
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+}
 
 
 
@@ -231,19 +310,22 @@ class BoardGame extends StatefulWidget {
   // attributes
   List<String> players;
   List<int> playerPosition = [];
-  List<String> imagePaths = ["vodka.png", "jagermeinster.png", "gin-tonic.png", "whiskey.png"];
+  // 7 players max
+  List<String> imagePaths = ["vodka.png", "jagermeinster.png", "whiskey.png", "gin-tonic.png","champagne.png", "wine.png", "beer.png"];
+  Rules ruleList = new Rules();
 
   // constructor
   BoardGame(List<String> players) {
     this.players = players;
     for(var player in players){
       this.playerPosition.add(0);
-  }
+    }
+    print("BoardGame");
   }
 
   @override
   State<StatefulWidget> createState() {
-    return _BoardGame(this.players, this.playerPosition, this.imagePaths);
+    return _BoardGame(this.players, this.playerPosition, this.imagePaths, this.ruleList);
   }
 }
 
@@ -258,13 +340,17 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
   int currentPlayer = 0;
   int diceValue = 1;
   List<String> imagePaths;
+  List<String> gifPaths;
+  Rules ruleList;
 
 
   // constructor
-  _BoardGame(List<String> players, List<int> position, List<String> paths) {
+  _BoardGame(List<String> players, List<int> position, List<String> paths, Rules rules) {
     this.players = players;
     this.playerPosition = position;
     this.imagePaths = paths;
+    this.ruleList = rules;
+    print("BoardGame state");
   }
 
   @override
@@ -294,7 +380,13 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
       this.playersImages.add(img);
     }
     // board's image
-    data = await rootBundle.load("images/GameOfGooseBoard.png");
+    bool isDark = currentTheme.getState();
+    if(isDark){
+      data = await rootBundle.load("images/GameOfGooseBoard-white.png");
+    }
+    else {
+      data = await rootBundle.load("images/GameOfGooseBoard-black.png");
+    }
     img =  await loadImage(new Uint8List.view(data.buffer));
     this.board = img;
     setState(() {
@@ -333,21 +425,45 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
     double largeur = MediaQuery.of(context).size.width;
 
     return Scaffold(
-        /*
-        appBar: AppBar(
-          title: Text("Plateau de jeux"),
-        ),
-        */
-
         floatingActionButton: FloatingActionButton(
+          elevation: 3,
           child: Icon(
             Icons.arrow_back_ios_outlined
           ),
-          onPressed: () {
-            Navigator.pop(context);
+          /*
+          onPressed: () async {
+            bool quit = await showDialog(
+              context: this.context,
+              child: new AlertDialog(
+                title: Text("Voulez-vous vraiment quitter le jeux?"),
+                actions: [
+                  new FlatButton(
+                    child: new Text("Annuler", textScaleFactor: 1.4,),
+                    onPressed: () => Navigator.pop(context, false),
+                  ),
+                  new FlatButton(
+                    child: new Text("Quitter", textScaleFactor: 1.4,),
+                    onPressed: () => Navigator.pop(context, true),
+                  ),
+                ],
+              ),
+            );
+            print(quit);
+            if(quit){
+              Navigator.pop(context);
+            }
+          },
+          */
+          onPressed: () async {
+            await showDialog(
+                barrierDismissible: true,
+                context: context,
+                builder: (_) {
+                  return RuleDialog("GIF"+this.ruleList.gif[1], this.ruleList.title[1], this.ruleList.rule[1]);
+                }
+            );
           },
         ),
-
         body: !this.loadingCompleted ? new Center(child: new SizedBox(width: 100.0, height: 100.0, child: new CircularProgressIndicator(strokeWidth: 10.0,),)) : Container(
           color: Theme.of(context).backgroundColor,
           child: Center(
@@ -368,50 +484,67 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                   ),
                 ),
                 // button to play --> next player
-                Container(
-                  width: largeur*0.25,
-                  child: RaisedButton(
-                    color: Theme.of(context).primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18.0),
-                    ),
-                    child: Container(
-                      padding: EdgeInsets.only(top: 10, bottom: 10),
-                      child: Text(
-                        this.players[this.currentPlayer]+",\nà toi de jouer!",
-                        textScaleFactor: 1.7,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyText1.color,
-                            fontWeight: FontWeight.bold
+                Column(mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: largeur*0.25,
+                      child: RaisedButton(
+                        color: Theme.of(context).primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18.0),
                         ),
+                        child: Container(
+                          padding: EdgeInsets.only(top: 10, bottom: 10),
+                          child: Text(
+                            this.players[this.currentPlayer]+",\nà toi de jouer!",
+                            textScaleFactor: 1.7,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                color: Theme.of(context).textTheme.bodyText1.color,
+                                fontWeight: FontWeight.bold
+                            ),
+                          ),
+                        ),
+                        // "onPressed" is async to wait the animation'end to move bottles
+                        onPressed: () async {
+                          // trhow dice
+                          diceValue = Random().nextInt(6) + 1;
+                          print("valeur du dé : " + diceValue.toString());
+                          // dice animation
+                          await showDialog(
+                              barrierDismissible: true,
+                              context: context,
+                              builder: (_) {
+                                return MyDialog(this.diceValue, this.playerPosition, this.currentPlayer);
+                              }
+                          );
+                          setState(() {
+                            //position ++
+                            this.playerPosition[this.currentPlayer] += this.diceValue;
+                            if(this.playerPosition[this.currentPlayer] > 63){
+                              this.playerPosition[this.currentPlayer] = 0;
+                            }
+                            // next player
+                            this.currentPlayer += 1;
+                            if(this.currentPlayer == this.players.length){
+                              this.currentPlayer = 0;
+                            }
+                          });
+                        },
                       ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        // trhow dice
-                        diceValue = Random().nextInt(6) + 1;
-                        // dice animation
-                        showDialog(
-                            barrierDismissible: true,
-                            context: context,
-                            builder: (_) {
-                              return MyDialog(this.diceValue, this.playerPosition, this.currentPlayer);
-                            });
-                        print("valeur du dé : " + diceValue.toString());
-                        //position ++
-                        this.playerPosition[this.currentPlayer] += this.diceValue;
-                        if(this.playerPosition[this.currentPlayer] > 63){
-                          this.playerPosition[this.currentPlayer] = 0;
-                        }
-                        // next player
-                        this.currentPlayer += 1;
-                        if(this.currentPlayer == this.players.length){
-                          this.currentPlayer = 0;
-                        }
-                      });
-                    },
-                  ),
+                    Container(
+                      height: hauteur*0.05,
+                    ),
+                    Text(
+                      this.imagePaths[currentPlayer].split(".")[0]+"\nPosition : " + this.playerPosition[this.currentPlayer].toString(),
+                      textScaleFactor: 1.5,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).textTheme.bodyText1.color,
+                      ),
+                    )
+                  ],
                 ),
               ],
             ),
