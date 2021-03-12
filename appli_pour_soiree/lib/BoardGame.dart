@@ -269,10 +269,15 @@ class _RuleDialog extends State<RuleDialog> {
       children: [
         Container(
           height: height*0.5,
-          child: Image.asset(this.gif)
+          width: width*0.5,
+          child: Image.asset(
+            this.gif,
+          ),
         ),
         Container(
-          padding: EdgeInsets.only(top: 5, bottom: 10, right: 20, left: 20),
+          height: 5,
+        ),
+        Container(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -291,9 +296,12 @@ class _RuleDialog extends State<RuleDialog> {
                 child: Text(
                   this.rule,
                   textScaleFactor: 1.3,
-                  textAlign: TextAlign.justify,
+                  textAlign: TextAlign.center,
                 ),
-              )
+              ),
+              Container(
+                height: 5,
+              ),
             ],
           ),
         )
@@ -313,6 +321,8 @@ class BoardGame extends StatefulWidget {
   // 7 players max
   List<String> imagePaths = ["vodka.png", "jagermeinster.png", "whiskey.png", "gin-tonic.png","champagne.png", "wine.png", "beer.png"];
   Rules ruleList = new Rules();
+  int nbrTour = 0;
+  int newRule = null;
 
   // constructor
   BoardGame(List<String> players) {
@@ -325,7 +335,7 @@ class BoardGame extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _BoardGame(this.players, this.playerPosition, this.imagePaths, this.ruleList);
+    return _BoardGame(this.players, this.playerPosition, this.imagePaths, this.ruleList, this.nbrTour, this.newRule);
   }
 }
 
@@ -342,14 +352,18 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
   List<String> imagePaths;
   List<String> gifPaths;
   Rules ruleList;
+  int nbrTour;
+  int newRule;
 
 
   // constructor
-  _BoardGame(List<String> players, List<int> position, List<String> paths, Rules rules) {
+  _BoardGame(List<String> players, List<int> position, List<String> paths, Rules rules, int nbrTour, int newR ) {
     this.players = players;
     this.playerPosition = position;
     this.imagePaths = paths;
     this.ruleList = rules;
+    this.nbrTour = nbrTour;
+    this.newRule = newR;
     print("BoardGame state");
   }
 
@@ -417,6 +431,16 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
+  // does an action according to the square on which the player has fallen
+  void play(int index) {
+    switch(index) {
+      case 15 : { this.newRule = this.currentPlayer; } break;
+      case 30 : { this.newRule = this.currentPlayer; } break;
+      case 45 : { this.newRule = this.currentPlayer; } break;
+      default : { print("Case pas importante"); } break;
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -433,14 +457,14 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
           onPressed: () async {
             bool quit = await showDialog(
               context: this.context,
-              child: new AlertDialog(
+              builder: (_) =>  AlertDialog(
                 title: Text("Voulez-vous vraiment quitter le jeux?"),
                 actions: [
-                  new FlatButton(
+                  new TextButton(
                     child: new Text("Annuler", textScaleFactor: 1.4,),
                     onPressed: () => Navigator.pop(context, false),
                   ),
-                  new FlatButton(
+                  new TextButton(
                     child: new Text("Quitter", textScaleFactor: 1.4,),
                     onPressed: () => Navigator.pop(context, true),
                   ),
@@ -495,11 +519,12 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                           ),
                         ),
                         // "onPressed" is async to wait the animation'end to move bottles
-                        onPressed: () async {
+                        onPressed: () {
                           // trhow dice
-                          diceValue = Random().nextInt(6) + 1;
+                          this.diceValue = Random().nextInt(6) + 1;
                           print("valeur du dé : " + diceValue.toString());
-                          // dice animation
+                          // dice animation --> not work since the flutter MAJ of 03-03-2021
+                          /*
                           await showDialog(
                               barrierDismissible: true,
                               context: context,
@@ -507,27 +532,62 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                                 return MyDialog(this.diceValue, this.playerPosition, this.currentPlayer);
                               }
                           );
-                          // position ++
-                          setState(() {
-                            this.playerPosition[this.currentPlayer] += this.diceValue;
-                            if(this.playerPosition[this.currentPlayer] > 63){
-                              this.playerPosition[this.currentPlayer] = 63;
+                           */
+                          // snack bar to display the dice value
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Votre lancé: "+this.diceValue.toString(), textAlign: TextAlign.center, textScaleFactor: 1.3,),
+                              duration: Duration(milliseconds: 2500),
+                              width: largeur*0.3, // Width of the SnackBar.
+                              padding: EdgeInsets.symmetric(horizontal: 8.0), // Inner padding for SnackBar content.
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                          );
+                          int i = 0;
+                          Timer.periodic(Duration(milliseconds: 400), (timer) {
+                            i++;
+                            setState(() {
+                              this.playerPosition[this.currentPlayer] += 1;
+                              if(this.playerPosition[this.currentPlayer] > 63){
+                                this.playerPosition[this.currentPlayer] = 63;
+                                timer.cancel();
+                              }
+                            });
+                            if(i == this.diceValue){
+                              timer.cancel();
                             }
                           });
-                          // display action
-                          await showDialog(
-                              barrierDismissible: true,
-                              context: context,
-                              builder: (_) {
-                                return RuleDialog("GIF/"+this.ruleList.gif[this.playerPosition[this.currentPlayer]-1], this.ruleList.title[this.playerPosition[this.currentPlayer]-1], this.ruleList.rule[this.playerPosition[this.currentPlayer]-1]);
+                          Timer(Duration(milliseconds: this.diceValue*400+600), () async {
+                            // display action
+                            await showDialog(
+                                barrierDismissible: true,
+                                context: context,
+                                builder: (_) {
+                                  String specialMessage = "";
+                                  // its a new rule case
+                                  if(this.playerPosition[this.currentPlayer] %15 == 0 && this.playerPosition[this.currentPlayer] != 60 ){
+                                    // if a rule already exist
+                                    if(this.newRule != null){
+                                      specialMessage = "Attention "+this.players[this.newRule]+", ta règle prend maintenant fin.\n\n";
+                                    }
+                                    // we change new rule player in play fonction
+                                  }
+                                  return RuleDialog("GIF/"+this.ruleList.gif[this.playerPosition[this.currentPlayer]-1], this.ruleList.title[this.playerPosition[this.currentPlayer]-1], specialMessage + this.ruleList.rule[this.playerPosition[this.currentPlayer]-1]);
+                                }
+                            );
+                            // does an action according to the square on which the player has fallen
+                            play(this.playerPosition[this.currentPlayer]);
+                            // next player
+                            setState(() {
+                              this.currentPlayer += 1;
+                              if(this.currentPlayer == this.players.length){
+                                this.currentPlayer = 0;
                               }
-                          );
-                          // next player
-                          setState(() {
-                            this.currentPlayer += 1;
-                            if(this.currentPlayer == this.players.length){
-                              this.currentPlayer = 0;
-                            }
+                              this.nbrTour += 1;
+                            });
                           });
                         },
                       ),
