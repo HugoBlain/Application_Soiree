@@ -322,20 +322,26 @@ class BoardGame extends StatefulWidget {
   List<String> imagePaths = ["vodka.png", "jagermeinster.png", "whiskey.png", "gin-tonic.png","champagne.png", "wine.png", "beer.png"];
   Rules ruleList = new Rules();
   int nbrTour = 0;
-  int newRule = null;
+  int newRule;
+  // save who has a pledge
+  List<List<int>> memory = [];
 
   // constructor
   BoardGame(List<String> players) {
     this.players = players;
     for(var player in players){
       this.playerPosition.add(0);
+      // 3 because we save 3 tour max in mem
+      this.memory.add(List<int>.generate(this.players.length, (int index) => 0));
+      this.memory.add(List<int>.generate(this.players.length, (int index) => 0));
+      this.memory.add(List<int>.generate(this.players.length, (int index) => 0));
     }
     print("BoardGame");
   }
 
   @override
   State<StatefulWidget> createState() {
-    return _BoardGame(this.players, this.playerPosition, this.imagePaths, this.ruleList, this.nbrTour, this.newRule);
+    return _BoardGame(this.players, this.playerPosition, this.imagePaths, this.ruleList, this.nbrTour, this.newRule, this.memory);
   }
 }
 
@@ -354,16 +360,18 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
   Rules ruleList;
   int nbrTour;
   int newRule;
+  List<List<int>> memory;
 
 
   // constructor
-  _BoardGame(List<String> players, List<int> position, List<String> paths, Rules rules, int nbrTour, int newR ) {
+  _BoardGame(List<String> players, List<int> position, List<String> paths, Rules rules, int nbrTour, int newR, List<List<int>> mem) {
     this.players = players;
     this.playerPosition = position;
     this.imagePaths = paths;
     this.ruleList = rules;
     this.nbrTour = nbrTour;
     this.newRule = newR;
+    this.memory = mem;
     print("BoardGame state");
   }
 
@@ -434,9 +442,14 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
   // does an action according to the square on which the player has fallen
   void play(int index) {
     switch(index) {
+      // new rule
       case 15 : { this.newRule = this.currentPlayer; } break;
       case 30 : { this.newRule = this.currentPlayer; } break;
       case 45 : { this.newRule = this.currentPlayer; } break;
+      // pledge
+      case 38 : { this.memory.last[this.currentPlayer] = 38; } break; // accent 3 tours
+      case 49 : { this.memory[this.players.length][this.currentPlayer] = 49; } break; // shutup 1 tour
+      case 50 : { this.memory[this.players.length*2][this.currentPlayer] = 50; } break; // slave 2 tours
       default : { print("Case pas importante"); } break;
     }
   }
@@ -523,8 +536,8 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                           // trhow dice
                           this.diceValue = Random().nextInt(6) + 1;
                           print("valeur du dé : " + diceValue.toString());
-                          // dice animation --> not work since the flutter MAJ of 03-03-2021
                           /*
+                          // dice animation --> not work since the flutter MAJ of 03-03-2021
                           await showDialog(
                               barrierDismissible: true,
                               context: context,
@@ -546,6 +559,7 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                               ),
                             ),
                           );
+                          // player position ++
                           int i = 0;
                           Timer.periodic(Duration(milliseconds: 400), (timer) {
                             i++;
@@ -560,6 +574,7 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                               timer.cancel();
                             }
                           });
+                          // after that player move
                           Timer(Duration(milliseconds: this.diceValue*400+600), () async {
                             // display action
                             await showDialog(
@@ -575,6 +590,18 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                                     }
                                     // we change new rule player in play fonction
                                   }
+                                  // check if a pledge ends ?
+                                  for(int i = 0; i<this.players.length; i++){
+                                    // if yes
+                                    if(this.memory[0][i] != 0) {
+                                     switch(this.memory[0][i]){
+                                       case 38 : { specialMessage = "C'est bon "+this.players[i]+", tu peut reparler normalement.\n\n"; } break;
+                                       case 49 : { specialMessage = "C'est bon "+this.players[i]+", tu peut reparler.\n\n"; } break;
+                                       case 50 : { specialMessage = "C'est bon "+this.players[i]+", la personne que tu avais choisis n'est plus ton esclave. Toute les bonnes choses ont une fin.\n\n"; } break;
+                                       default : { print("pas encore notée"); } break;
+                                     }
+                                    }
+                                  }
                                   return RuleDialog("GIF/"+this.ruleList.gif[this.playerPosition[this.currentPlayer]-1], this.ruleList.title[this.playerPosition[this.currentPlayer]-1], specialMessage + this.ruleList.rule[this.playerPosition[this.currentPlayer]-1]);
                                 }
                             );
@@ -586,6 +613,8 @@ class _BoardGame extends State<BoardGame> with SingleTickerProviderStateMixin {
                               if(this.currentPlayer == this.players.length){
                                 this.currentPlayer = 0;
                               }
+                              this.memory.removeAt(0);
+                              this.memory.add(List<int>.generate(this.players.length, (int index) => 0));
                               this.nbrTour += 1;
                             });
                           });
