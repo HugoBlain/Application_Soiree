@@ -1,6 +1,7 @@
 import 'package:appli_pour_soiree/BoardGame.dart';
 import 'package:appli_pour_soiree/Piccolo.dart';
 import 'package:appli_pour_soiree/Settings.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:appli_pour_soiree/PimPamPoum.dart';
 import 'package:appli_pour_soiree/Undercover.dart';
@@ -95,10 +96,33 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
               enabled: true,
               controller: _controller,
               onSubmitted: (String value) {
-                setState(() {
-                  players.add(value);
-                  _controller.clear();
-                });
+                String name = value;
+                name = name.substring(0,1).toUpperCase()+name.substring(1).toLowerCase();
+                if(this.players.contains(name)){
+                  showDialog(
+                    context: this.context,
+                    builder: (_) =>  AlertDialog(
+                      title: Text("Erreur"),
+                      content: Container(
+                        child: Text(
+                          "Désolé, il semble que ce joueur ait déjà été ajouté. Si deux joueurs ont le même prénom il faut un moyen de les distinguer dans les jeux. Entrer par exemple un surnom ou leur nom de famille."
+                        ),
+                      ),
+                      actions: [
+                        new TextButton(
+                          child: new Text("OK", textScaleFactor: 1.4,),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                else {
+                  setState(() {
+                    players.add(name);
+                    _controller.clear();
+                  });
+                }
               },
               style:
                   TextStyle(color: Theme.of(context).textTheme.bodyText1.color),
@@ -132,19 +156,23 @@ class _SelectionJoueurPage extends State<SelectionJoueurPage> {
                   child: Center(
                     child: Container(
                       width: MediaQuery.of(context).size.width / 1.5,
-                      height: MediaQuery.of(context).size.height / 12,
+                      //height: MediaQuery.of(context).size.height / 12,
                       child: Card(
                         // elevation: 0,
                         shape: RoundedRectangleBorder(
                             side: BorderSide.none,
                             borderRadius: BorderRadius.circular(
                                 MediaQuery.of(context).size.height / 35)),
-                        child: Text(
-                          player,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            // color: Colors.white,
-                            fontSize: MediaQuery.of(context).size.height / 24,
+                        child: Container(
+                          padding: EdgeInsets.all(7),
+                          child: Text(
+                            player,
+                            textAlign: TextAlign.center,
+                            textScaleFactor: 2,
+                            style: TextStyle(
+                              // color: Colors.white,
+                              //fontSize: MediaQuery.of(context).size.height / 24,
+                            ),
                           ),
                         ),
                       ),
